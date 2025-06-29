@@ -5,6 +5,7 @@ import com.ashish.tasknotificationsystem.Enum.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,16 +30,16 @@ public class Task {
     private Status status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignee_username")
+    @JoinColumn(name = "assignee_id")
     private Assignee assignedTo;
 
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
-    private LocalDateTime updatedAt;
+    private LocalDate updatedAt;
 
-    private LocalDateTime completedAt;
+    private LocalDate completedAt;
 
     @OneToMany(mappedBy = "parentTask" , cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subtask> subtasks;
@@ -49,11 +50,11 @@ public class Task {
 
     @PrePersist
     protected void onCreate(){
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDate.now();
     }
 
     @PreUpdate
     protected void onUpdate(){
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDate.now();
     }
 }

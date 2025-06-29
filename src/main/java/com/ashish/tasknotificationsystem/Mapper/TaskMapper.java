@@ -23,6 +23,9 @@ public class TaskMapper {
         dto.setPriority(task.getPriority());
         dto.setStatus(task.getStatus());
         dto.setDueDate(task.getDueDate());
+        dto.setUpdatedAt(task.getUpdatedAt());
+        dto.setCreatedAt(task.getCreatedAt());
+        dto.setCompletedAt(task.getCompletedAt());
         dto.setSubtasks(task.getSubtasks().stream().map(TaskMapper::subtaskToDto).toList());
         dto.setTags(task.getTags());
         dto.setAttachments(task.getAttachments());
@@ -41,6 +44,8 @@ public class TaskMapper {
         task.setStatus(dto.getStatus());
         task.setAssignedTo(assignee);
         task.setDueDate(dto.getDueDate());
+        task.setUpdatedAt(dto.getUpdatedAt());
+        task.setCompletedAt(dto.getCompletedAt());
 
         List<Subtask> subtasks = dto.getSubtasks().stream().map(TaskMapper::dtoToSubtask).toList();
         for (Subtask subtask : subtasks) {

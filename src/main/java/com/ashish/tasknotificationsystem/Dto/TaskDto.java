@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,13 @@ public class TaskDto {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
+
+    private LocalDate createdAt;
+
+    private LocalDate updatedAt;
+
+    private LocalDate completedAt;
 
     private List<SubtaskDto> subtasks = new ArrayList<>();
 

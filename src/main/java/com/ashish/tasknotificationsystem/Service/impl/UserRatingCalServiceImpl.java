@@ -8,6 +8,7 @@ import com.ashish.tasknotificationsystem.Repository.AssigneeRepository;
 import com.ashish.tasknotificationsystem.Service.UserRatingCalService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class UserRatingCalServiceImpl implements UserRatingCalService {
         double reward = 0;
         double bonus = 0;
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate now = LocalDate.now();
 
         for (Task task : tasks) {
             Status status = task.getStatus();

@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 @Slf4j
@@ -29,6 +31,10 @@ public class AssigneeServiceImpl implements AssigneeService, UserDetailsService 
         this.assigneeRepository = assigneeRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+    }
+
+    public List<Assignee> findAll(){
+        return assigneeRepository.findAll();
     }
 
     public Assignee findByUsername(String username){
