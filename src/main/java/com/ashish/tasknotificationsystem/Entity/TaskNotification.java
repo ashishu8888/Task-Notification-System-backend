@@ -1,31 +1,22 @@
 package com.ashish.tasknotificationsystem.Entity;
 
 
+import com.ashish.tasknotificationsystem.Dto.TaskDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskNotification {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    private String notificationType;
-
-    private LocalDateTime sentAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_id")
-    private Task task;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private LocalDate date;
+    private TaskDto task;
 }

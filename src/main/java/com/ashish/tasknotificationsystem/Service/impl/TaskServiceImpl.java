@@ -1,16 +1,23 @@
 package com.ashish.tasknotificationsystem.Service.impl;
 
+import com.ashish.tasknotificationsystem.Config.RabbitMqConfig;
 import com.ashish.tasknotificationsystem.Dto.SubtaskDto;
 import com.ashish.tasknotificationsystem.Dto.TaskDto;
 import com.ashish.tasknotificationsystem.Entity.Assignee;
 import com.ashish.tasknotificationsystem.Entity.Subtask;
 import com.ashish.tasknotificationsystem.Entity.Task;
+import com.ashish.tasknotificationsystem.Entity.TaskNotification;
 import com.ashish.tasknotificationsystem.Enum.Status;
 import com.ashish.tasknotificationsystem.Exception.ResourceNotFoundException;
 import com.ashish.tasknotificationsystem.Mapper.TaskMapper;
+import com.ashish.tasknotificationsystem.PubSubUtils.RmqPublisherUtil;
 import com.ashish.tasknotificationsystem.Repository.TaskRepository;
 import com.ashish.tasknotificationsystem.Service.TaskService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -20,27 +27,28 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final AssigneeServiceImpl assigneeService;
+    private final RmqPublisherUtil rmqPublisherUtil;
+
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, AssigneeServiceImpl assigneeService){
+    public TaskServiceImpl(TaskRepository taskRepository, AssigneeServiceImpl assigneeService, RmqPublisherUtil rmqPublisherUtil){
         this.taskRepository = taskRepository;
         this.assigneeService = assigneeService;
+        this.rmqPublisherUtil = rmqPublisherUtil;
     }
 
-    private Assignee getLoggedInUser(){
+    public Assignee getLoggedInUser(){
         return assigneeService.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     @Override
     public TaskDto createTask(TaskDto taskDto) {
-        Task t = TaskMapper.dtoToTask(taskDto,getLoggedInUser());
-        taskRepository.save(t);
-        TaskDto dto = TaskMapper.taskToDto(t);
-        return dto;
+        return TaskMapper.taskToDto(TaskMapper.dtoToTask(taskDto,getLoggedInUser()));
     }
 
     @Override
@@ -51,7 +59,7 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task relatedTask = taskRepository.findById(subtaskDto.getParentTaskId())
-                .orElseThrow(() -> new ResourceNotFoundException("Parent task not found with ID: " + subtaskDto.getParentTaskId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Parent task not found when trying to add subtask with parent ID: " + subtaskDto.getParentTaskId()));
 
 
         Subtask newSubtask = TaskMapper.dtoToSubtask(subtaskDto);
