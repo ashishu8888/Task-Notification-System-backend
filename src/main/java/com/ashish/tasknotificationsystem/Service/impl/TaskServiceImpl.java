@@ -12,6 +12,7 @@ import com.ashish.tasknotificationsystem.Exception.ResourceNotFoundException;
 import com.ashish.tasknotificationsystem.Mapper.TaskMapper;
 import com.ashish.tasknotificationsystem.PubSubUtils.RmqPublisherUtil;
 import com.ashish.tasknotificationsystem.Repository.TaskRepository;
+import com.ashish.tasknotificationsystem.Schedules.TaskSchedules;
 import com.ashish.tasknotificationsystem.Service.TaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -33,13 +34,15 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final AssigneeServiceImpl assigneeService;
     private final RmqPublisherUtil rmqPublisherUtil;
+    private final TaskSchedules taskSchedules;
 
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository, AssigneeServiceImpl assigneeService, RmqPublisherUtil rmqPublisherUtil){
+    public TaskServiceImpl(TaskRepository taskRepository, AssigneeServiceImpl assigneeService, RmqPublisherUtil rmqPublisherUtil, TaskSchedules taskSchedules){
         this.taskRepository = taskRepository;
         this.assigneeService = assigneeService;
         this.rmqPublisherUtil = rmqPublisherUtil;
+        this.taskSchedules = taskSchedules;
     }
 
     public Assignee getLoggedInUser(){
@@ -48,7 +51,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDto createTask(TaskDto taskDto) {
-        return TaskMapper.taskToDto(TaskMapper.dtoToTask(taskDto,getLoggedInUser()));
+        return TaskMapper.taskToDto(taskRepository.save(TaskMapper.dtoToTask(taskDto,getLoggedInUser())));
     }
 
     @Override
@@ -106,9 +109,17 @@ public class TaskServiceImpl implements TaskService {
 
         LocalDate todayDate = LocalDate.now();
 
-        List<Task> notCompletedTasks = taskRepository.findAllNotCompletedTasks(username);
+        List<Task> notCompletedTasks = taskSchedules.getOverdueTaskOnADay(assignee,LocalDate.now()).stream().map(t -> TaskMapper.dtoToTask(t,assignee)).toList();
 
-        return notCompletedTasks.stream().filter(task -> task.getDueDate().isEqual(todayDate)).map(TaskMapper::taskToDto).toList();
+//        notCompletedTasks = notCompletedTasks.stream().filter(task -> task.getDueDate().isEqual(todayDate)).toList();
+
+        List<TaskDto> taskDos = notCompletedTasks.stream().map(TaskMapper::taskToDto).toList();
+        if(!taskDos.isEmpty()) {
+            taskDos.forEach( task ->
+                    rmqPublisherUtil.publishTasksToRmq(assignee, task)
+            );
+        }
+            return taskDos;
     }
 
     @Override
@@ -160,10 +171,7 @@ public class TaskServiceImpl implements TaskService {
 
         task.setStatus(status);
 
-        taskRepository.save(task);
-
-        return TaskMapper.taskToDto(task);
-
+        return TaskMapper.taskToDto(taskRepository.save(task));
     }
 
     @Override

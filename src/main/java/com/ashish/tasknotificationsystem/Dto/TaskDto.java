@@ -1,7 +1,5 @@
 package com.ashish.tasknotificationsystem.Dto;
 
-import com.ashish.tasknotificationsystem.Entity.Assignee;
-import com.ashish.tasknotificationsystem.Entity.Subtask;
 import com.ashish.tasknotificationsystem.Enum.Priority;
 import com.ashish.tasknotificationsystem.Enum.Status;
 import jakarta.persistence.*;
@@ -11,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -40,7 +40,7 @@ public class TaskSchedules {
         return notCompletedTasks.stream().filter(task -> task.getDueDate().isEqual(date)).map(TaskMapper::taskToDto).toList();
     }
 
-    private List<TaskDto> getOverdueTaskOnADay(Assignee assignee, LocalDate date){
+    public List<TaskDto> getOverdueTaskOnADay(Assignee assignee, LocalDate date){
         String username = assignee.getUsername();
 
         List<Task> notCompletedTasks = taskRepository.findAllNotCompletedTasks(username);
